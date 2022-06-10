@@ -1,0 +1,3 @@
+cd RArea
+TestRArea
+cd ..
