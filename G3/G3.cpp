@@ -4,7 +4,8 @@
 #include <iostream>
 
 G3::G3(const XPSHelper& hlp, int k) :
-	xpsHlp_(hlp)
+	xpsHlp_(hlp),
+	K_(k)
 {
 	std::cout << "Start G3 Constructor" << std::endl;
 
@@ -50,7 +51,7 @@ void G3::AddWellsField(int w, int h, const std::set<std::pair<int, int>> wellsCo
 
 	for (const auto& coords : wellsCoords) {
 		maxX = std::max(maxX, coords.first);
-		maxY = std::min(maxY, coords.second);
+		maxY = std::max(maxY, coords.second);
 	}
 
 	std::vector<std::pair<int, int>> form;
@@ -108,6 +109,7 @@ void G3::SetCoats() {
 			cur = Merge(cur, xpsHlp_.GetWellCoat(wellNum));
 
 		coat_.push_back(cur);
+		//std::cout << cur.Square() << std::endl;
 	}
 
 	std::cout << "Set Coats OK" << std::endl;
@@ -116,7 +118,7 @@ void G3::SetCoats() {
 void G3::SetAdjList() {
 	adjList_.resize(vertex_.size());
 	for (int i = 0; i < vertex_.size(); ++i)
-		for (int j = i + 1; j < vertex_[i].size(); ++j)
+		for (int j = i + 1; j < vertex_.size(); ++j)
 			if (IntersectionSize(coat_[i], coat_[j]) > 0) {
 				adjList_[i].push_back(j);
 				adjList_[j].push_back(i);
@@ -124,6 +126,27 @@ void G3::SetAdjList() {
 
 	std::cout << "Set Adj List OK" << std::endl;
 }
+
+const std::vector<std::vector<int>>& G3::GetVertex() const {
+	return vertex_;
+}
+
+const std::vector<std::vector<int>>& G3::GetAdjList() const {
+	return adjList_;
+}
+
+const std::vector<RArea>& G3::GetCoat() const {
+	return coat_;
+}
+
+const int G3::GetK() const {
+	return K_;
+}
+
+const XPSHelper& G3::GetXPSHelper() const {
+	return xpsHlp_;
+}
+
 /*
 const std::vector<std::pair<int, int>>& G3::GetVertexOldCoord() const {
 	return XPSoldGeom_;

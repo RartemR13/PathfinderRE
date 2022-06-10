@@ -12,6 +12,12 @@ public:
 	const std::vector<std::pair<int, int>>& GetVertexOldCoord() const;
 	const std::vector<std::pair<int, int>>& GetVertexCoord() const;
 
+	const std::vector<std::vector<int>>& GetVertex() const;
+	const std::vector<std::vector<int>>& GetAdjList() const;
+	const std::vector<RArea>& GetCoat() const;
+	const int GetK() const;
+	const XPSHelper& GetXPSHelper() const;
+
 private:
 	void AddWellsField(int w, int h, const std::set<std::pair<int, int>> wellsCoords);
 	void UniqueField();
@@ -25,4 +31,5 @@ private:
 	std::vector<std::vector<int>> adjList_;
 	//список смежности между наборами вершин
 	const XPSHelper& xpsHlp_;
+	const int K_;
 };
