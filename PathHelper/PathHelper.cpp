@@ -48,7 +48,8 @@ void PathHelper::GenQue(int num, std::vector<std::vector<int>>& toQue, const std
 	for (int i = 0; i < toQue.size(); ++i)
 		std::sort(toQue[i].begin(), toQue[i].end(),
 		[&](int lhs, int rhs) {
-			return IntersectionSize(g3_.GetCoat()[num], g3_.GetCoat()[lhs]) > IntersectionSize(g3_.GetCoat()[num], g3_.GetCoat()[rhs]);	
+			return g3_.GetCoat()[num].Square() + g3_.GetCoat()[lhs].Square() - IntersectionSize(g3_.GetCoat()[num], g3_.GetCoat()[lhs]) < 
+				   g3_.GetCoat()[num].Square() + g3_.GetCoat()[rhs].Square() - IntersectionSize(g3_.GetCoat()[num], g3_.GetCoat()[rhs]);	
 		});
 }
 
