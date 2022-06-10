@@ -1,0 +1,3 @@
+[submodule "TimeChecker"]
+	path = TimeChecker
+	url = https://github.com/RartemR13/TimeChecker
