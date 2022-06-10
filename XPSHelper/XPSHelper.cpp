@@ -79,7 +79,9 @@ XPSHelper::XPSHelper(const char* XPSFilePath) {
 			geometry_.push_back({X - SubX, Y - SubY});
 	}
 
-	std::cout << "Geometry OK" << std::endl;
+	oldGeometry_ = geometry_;
+
+	std::cout << "Old Geometry OK" << std::endl;
 
 	std::vector<std::pair<int, int>> linesSegments;
 	int curVertexStart = 0,
@@ -123,22 +125,22 @@ XPSHelper::XPSHelper(const char* XPSFilePath) {
 	for (int i = 0; i < geometry_.size(); ++i)
 		geomToNum_[geometry_[i]] = i;
 
-	std::cout << "Geometry compress OK" << std::endl;
+	std::cout << "Geometry OK" << std::endl;
 	std::cout << "XPSHelper constructor OK" << std::endl;
 }
 
-int XPSHelper::GetWellCount() {
+int XPSHelper::GetWellCount() const {
 	return storage_.size();
 }
 
-int XPSHelper::GetWellNum(std::pair<int, int> coords) {
+int XPSHelper::GetWellNum(std::pair<int, int> coords) const {
 	return geomToNum_.at(coords);
 }
 
-std::pair<int, int> XPSHelper::GetWellCoords(int num) {
+std::pair<int, int> XPSHelper::GetWellCoords(int num) const {
 	return geometry_[num];
 }
 
-RArea XPSHelper::GetWellCoat(int num) {
+RArea XPSHelper::GetWellCoat(int num) const {
 	return storage_[num];
 }
