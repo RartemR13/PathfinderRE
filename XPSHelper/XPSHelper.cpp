@@ -65,7 +65,10 @@ XPSHelper::XPSHelper(const char* XPSFilePath) {
 	XPSIn.close();
 
 	DeleteUnusedXPSLines(xpsLines);
-
+/*
+	for (int i = 77000; i < xpsLines.size(); ++i)
+		std::cout << xpsLines[i] << std::endl;
+*/
 	std::cout << "Deleting unused XPS Lines OK" << std::endl;
 
 	int SubX = GetVertexX(xpsLines[0]),
@@ -97,10 +100,16 @@ XPSHelper::XPSHelper(const char* XPSFilePath) {
 		curLineNum++;
 	}
 	linesSegments.push_back({curVertexStart, curLineNum-1});
+/*
+	for (int i = 0; i < linesSegments.size(); ++i) {
+		std::cout << linesSegments[i].first << " " << linesSegments[i].second << std::endl;
+	}
+*/
+	std::cout << std::endl;
 
 	for (const auto& segment : linesSegments) {
 		std::vector<std::string> segmentLines;
-		for (int i = segment.first; i < segment.second; ++i)
+		for (int i = segment.first; i <= segment.second; ++i)
 			segmentLines.push_back(xpsLines[i]);
 
 		storage_.push_back(RArea(segmentLines));

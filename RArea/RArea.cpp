@@ -28,7 +28,16 @@ RArea::RArea(const std::vector<std::string>& data) {
 
 		return lhs[0].second < rhs[0].second;
 	});
+/*
+	if (points.front()[0].second == 940) {
 
+		for (int i = 0; i < points.size(); ++i) {
+			std::cout << points[i][0].first << " " << points[i][1].first << " " << points[i][0].second << std::endl;
+		}
+
+		std::cout << std::endl;
+	}
+*/
 	std::vector<std::pair<int, int>> n_data;
 	std::vector<int> n_lines;
 

@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 	for (int i = 0; i < g3.GetXPSHelper().GetWellCount(); ++i)
 		out << g3.GetXPSHelper().GetWellCoords(i).first << " " << g3.GetXPSHelper().GetWellCoords(i).second << "\n";
 	out << "\n";
-	ph.FindPath(std::vector<int>{0, 1});
+	ph.FindPath(std::vector<int>{4192, 4193});
 
 	ph.WritePath(out);
 	out.close();
