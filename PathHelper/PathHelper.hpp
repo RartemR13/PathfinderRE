@@ -24,6 +24,8 @@ public:
 	const std::vector<int>& GetPath();
 	//возращает последовательность наборов единичных вершин
 
+	void Optimize();
+
 private:
 	int FindVertex(std::vector<int> st);
 	void AddField(int num, std::set<int>& toAdd);

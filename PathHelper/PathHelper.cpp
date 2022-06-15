@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <set>
+#include <windows.h>
 
 std::vector<std::pair<int, int>> PathHelper::GetVertexGeometry(int vertex) {
 	std::vector<std::pair<int, int>> ret;
@@ -250,11 +251,98 @@ void PathHelper::WriteXPSPath(std::ofstream& out) {
 		);
 }
 
-/*
-void PathHelper::Optimize() {
 
+void PathHelper::Optimize() {
+	std::ofstream out("tsp_file.tsp", std::ios::out);
+
+	out << "DIMENSION : " << path_.size() << "\n";
+	out << "EDGE_WEIGHT_TYPE : EXPLICIT\n";
+	out << "EDGE_WEIGHT_FORMAT : FULL_MATRIX\n";
+	out << "EDGE_WEIGHT_SECTION\n";
+
+	for (int i = 0; i < path_.size(); ++i) {
+		for (int j = 0; j < path_.size(); ++j) {
+			if (i == j) {
+				out << INT_MAX << " ";
+				continue;
+			}
+
+			out << SimSum(path_[i], path_[j]) << " ";
+		}
+
+		out << "\n";
+	}
+
+	out << "EOF\n";
+	out.close();
+
+	STARTUPINFO StartupInfo;
+	ZeroMemory(&StartupInfo, sizeof(StartupInfo));
+	StartupInfo.cb = sizeof(StartupInfo);
+
+	PROCESS_INFORMATION ProcInfo;
+	ZeroMemory(&ProcInfo, sizeof(ProcInfo));
+	if (not CreateProcess(NULL,
+						  "VoyagerSolver\\LinKernighan.exe -o in.txt tsp_file.tsp",
+						  NULL,
+						  NULL,
+						  FALSE,
+						  0,
+						  NULL,
+						  NULL,
+						  &StartupInfo,
+						  &ProcInfo)) 
+	{}
+
+	WaitForSingleObject(ProcInfo.hProcess, INFINITE);
+	CloseHandle(ProcInfo.hProcess);
+	CloseHandle(ProcInfo.hThread);
+
+	std::ifstream in("in.txt", std::ios::in);
+
+	int t;
+	in >> t >> t;
+
+	std::vector<std::vector<int>> edges;
+
+	for (int i = 0; i < path_.size(); ++i) {
+		int v, to, weight;
+		in >> v >> to >> weight;
+		edges.push_back({v, to, weight});
+	}
+	in.close();
+
+	int maxEdgeWeight = -1,
+		maxEdgeNum = -1;
+
+	for (int i = 0; i < edges.size(); ++i)
+		if (edges[i][2] > maxEdgeWeight) {
+			maxEdgeWeight = edges[i][2];
+			maxEdgeNum = i; 
+		}
+
+	auto oldPath = path_;
+
+	path_.clear();
+
+	for (int i = maxEdgeNum+1; i < edges.size(); ++i) {
+		if (path_.empty() or path_.back() != edges[i][0])
+			path_.push_back(edges[i][0]);
+		if (path_.empty() or path_.back() != edges[i][1])
+			path_.push_back(edges[i][1]);
+	}
+
+	for (int i = 0; i < maxEdgeNum; ++i) {
+		if (path_.empty() or path_.back() != edges[i][0])
+			path_.push_back(edges[i][0]);
+		if (path_.empty() or path_.back() != edges[i][1])
+			path_.push_back(edges[i][1]);
+	}
+
+	for (int i = 0; i < path_.size(); ++i)
+		path_[i] = oldPath[path_[i]];
 }
-*/
+
 const std::vector<int>& PathHelper::GetPath() {
 	return path_;
 }

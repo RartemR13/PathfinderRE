@@ -18,6 +18,7 @@ int main(int argc, char* argv[]) {
 		out << g3.GetXPSHelper().GetWellCoords(i).first << " " << g3.GetXPSHelper().GetWellCoords(i).second << "\n";
 	out << "\n";
 	ph.FindPath(std::vector<int>{4192, 4193});
+	ph.Optimize();
 
 	ph.WritePath(out);
 	out.close();
