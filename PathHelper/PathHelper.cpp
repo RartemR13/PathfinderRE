@@ -211,7 +211,7 @@ void PathHelper::FindPath(std::vector<int> st) {
 		lastDirection = GetDirection(last, next);
 		std::cout << "Direction " << lastDirection << std::endl;
 		last = next;
-		path_.push_back(g3_.GetVertex()[next]);
+		path_.push_back(next);
 
 		for (int i = 0; i < que.size(); ++i)
 			que[i].clear();
@@ -230,7 +230,8 @@ void PathHelper::WritePath(std::ofstream& out) {
 
 	out << path_.size() << "\n\n";
 
-	for(const auto& vertexes : path_) {
+	for(const auto& vertex : path_) {
+		const auto& vertexes = g3_.GetVertex()[vertex];
 		out << vertexes.size() << " 0" << "\n";
 		for(const auto& vertex : vertexes)
 			out << g3_.GetXPSHelper().GetWellCoords(vertex).first << " "
@@ -249,6 +250,11 @@ void PathHelper::WriteXPSPath(std::ofstream& out) {
 		);
 }
 
-const std::vector<std::vector<int>>& PathHelper::GetPath() {
+/*
+void PathHelper::Optimize() {
+
+}
+*/
+const std::vector<int>& PathHelper::GetPath() {
 	return path_;
 }

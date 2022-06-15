@@ -21,7 +21,7 @@ public:
 	void FindPath(std::vector<int> st);
 	void WritePath(std::ofstream& out);
 	void WriteXPSPath(std::ofstream& out);
-	const std::vector<std::vector<int>>& GetPath();
+	const std::vector<int>& GetPath();
 	//возращает последовательность наборов единичных вершин
 
 private:
@@ -35,6 +35,6 @@ private:
 	Direction GetDirection(int lhs, int rhs);
 	std::vector<std::pair<int, int>> GetVertexGeometry(int vertex);
 
-	std::vector<std::vector<int>> path_;
+	std::vector<int> path_;
 	const G3& g3_;
 };
