@@ -163,18 +163,8 @@ void G3::SetAdjList() {
 			if (doAdd)
 				adjList_[i].push_back(g3Vertex);
 		}
-
-		//std::cout << adjList_[i].size() << std::endl;
 	}
 
-/*
-	for (int i = 0; i < vertex_.size(); ++i)
-		for (int j = i + 1; j < vertex_.size(); ++j)
-			if (IntersectionSize(coat_[i], coat_[j]) > std::max(coat_[i].Square(), coat_[j].Square()) / 2) {
-				adjList_[i].push_back(j);
-				adjList_[j].push_back(i);
-			}
-*/
 	std::cout << "Set Adj List OK" << std::endl;
 }
 

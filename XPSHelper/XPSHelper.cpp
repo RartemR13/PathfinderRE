@@ -65,10 +65,7 @@ XPSHelper::XPSHelper(const char* XPSFilePath) {
 	XPSIn.close();
 
 	DeleteUnusedXPSLines(xpsLines);
-/*
-	for (int i = 77000; i < xpsLines.size(); ++i)
-		std::cout << xpsLines[i] << std::endl;
-*/
+
 	std::cout << "Deleting unused XPS Lines OK" << std::endl;
 
 	int SubX = GetVertexX(xpsLines[0]),
@@ -78,11 +75,11 @@ XPSHelper::XPSHelper(const char* XPSFilePath) {
 		int X = GetVertexX(curXpsLine),
 			Y = GetVertexY(curXpsLine);
 
+		oldGeometry_.push_back({X, Y});
+
 		if (geometry_.empty() || geometry_.back() != std::make_pair(X - SubX, Y - SubY))
 			geometry_.push_back({X - SubX, Y - SubY});
 	}
-
-	oldGeometry_ = geometry_;
 
 	std::cout << "Old Geometry OK" << std::endl;
 
@@ -100,12 +97,6 @@ XPSHelper::XPSHelper(const char* XPSFilePath) {
 		curLineNum++;
 	}
 	linesSegments.push_back({curVertexStart, curLineNum-1});
-/*
-	for (int i = 0; i < linesSegments.size(); ++i) {
-		std::cout << linesSegments[i].first << " " << linesSegments[i].second << std::endl;
-	}
-*/
-	std::cout << std::endl;
 
 	for (const auto& segment : linesSegments) {
 		std::vector<std::string> segmentLines;
@@ -152,4 +143,8 @@ std::pair<int, int> XPSHelper::GetWellCoords(int num) const {
 
 RArea XPSHelper::GetWellCoat(int num) const {
 	return storage_[num];
+}
+
+std::pair<int, int> XPSHelper::GetOldCoords(int num) const {
+	return oldGeometry_[num];
 }

@@ -113,10 +113,6 @@ void PathHelper::GenQue(int num, std::vector<std::vector<int>>& toQue, const std
 		std::sort(toQue[i].begin(), toQue[i].end(),
 		[&](int lhs, int rhs) {
 			return SimSum(num, lhs) < SimSum(num, rhs);
-/*
-			return g3_.GetCoat()[num].Square() + g3_.GetCoat()[lhs].Square() - IntersectionSize(g3_.GetCoat()[num], g3_.GetCoat()[lhs]) < 
-				   g3_.GetCoat()[num].Square() + g3_.GetCoat()[rhs].Square() - IntersectionSize(g3_.GetCoat()[num], g3_.GetCoat()[rhs]);
-*/	
 		});
 }
 
@@ -242,16 +238,6 @@ void PathHelper::WritePath(std::ofstream& out) {
 	}
 }
 
-void PathHelper::WriteXPSPath(std::ofstream& out) {
-	if(not out.is_open())
-		throw std::invalid_argument("\n"
-			"Class PathHelper\n"
-			"Method WriteXPSPath\n"
-			"Output file at output stream is not open\n"
-		);
-}
-
-
 void PathHelper::Optimize() {
 	std::ofstream out("tsp_file.tsp", std::ios::out);
 
@@ -368,4 +354,22 @@ void PathHelper::Optimize() {
 
 const std::vector<int>& PathHelper::GetPath() {
 	return path_;
+}
+
+void PathHelper::WriteXPSPath(std::ofstream& out) {
+    if(not out.is_open())
+        throw std::invalid_argument("\n"
+            "Class PathHelper\n"
+            "Method WriteXPSPath\n"
+            "Output file at output stream is not open\n"
+        );
+
+    int blocknum = 0;
+    for(const auto& vertex : path_) {
+        const auto& vertexes = g3_.GetVertex()[vertex];
+        for(const auto& vertex : vertexes)
+            out << g3_.GetXPSHelper().GetOldCoords(vertex).first << " "
+            << g3_.GetXPSHelper().GetOldCoords(vertex).second << " " << blocknum << "\n";
+        blocknum++;
+    }
 }

@@ -3,7 +3,6 @@
 #include <cassert>
 #include <iostream>
 #include <algorithm>
-//#include <deque>
 namespace bg  = boost::geometry;
 namespace bgm = bg::model;
 
@@ -28,16 +27,7 @@ RArea::RArea(const std::vector<std::string>& data) {
 
 		return lhs[0].second < rhs[0].second;
 	});
-/*
-	if (points.front()[0].second == 940) {
 
-		for (int i = 0; i < points.size(); ++i) {
-			std::cout << points[i][0].first << " " << points[i][1].first << " " << points[i][0].second << std::endl;
-		}
-
-		std::cout << std::endl;
-	}
-*/
 	std::vector<std::pair<int, int>> n_data;
 	std::vector<int> n_lines;
 
@@ -47,55 +37,6 @@ RArea::RArea(const std::vector<std::string>& data) {
 	}
 
 	storage_ = RArea(n_data, n_lines).GetStorage();
-
-/*
-	std::vector<std::vector<std::pair<int, int>>> points[4];
-
-	for (int i = 0; i < data.size(); ++i) {
-		std::string temp = data[i].substr(63, 16);
-		int line = std::stoi(temp.substr(0, 4));
-		int l = std::stoi(temp.substr(4, 4));
-		int r = std::stoi(temp.substr(12, 4));
-
-		points[0].push_back({std::make_pair(l, line - 1), std::make_pair(r, line - 1)});
-		points[1].push_back({std::make_pair(l, line), std::make_pair(r, line)});
-		points[2].push_back({std::make_pair(l - 1, line), std::make_pair(r - 1, line)});
-		points[3].push_back({std::make_pair(l - 1, line - 1), std::make_pair(r - 1, line - 1)});
-	}
-
-	for (int i = 0; i < 4; ++i) {
-		std::sort(points[i].begin(), points[i].end(), 
-		[](std::vector<std::pair<int, int>> lhs,
-		   std::vector<std::pair<int, int>> rhs) {
-
-			return lhs[0].second < rhs[0].second;
-		});
-		std::reverse(points[i].begin(), points[i].end());
-	}
-
-	polygon cur[4];
-
-	for (int i = 0; i < 4; ++i) {
-		bg::append(cur[i], point(points[i][0][0].first, points[i][0][0].second));
-		bg::append(cur[i], point(points[i][0][1].first, points[i][0][1].second));
-
-		for (int j = 1; j < points[i].size(); ++j)
-			bg::append(cur[i], point(points[i][j][1].first, points[i][j][1].second));
-
-		for (int j = points[i].size() - 1; j >= 0; --j)
-			bg::append(cur[i], point(points[i][j][0].first, points[i][j][0].second));
-	}
-
-	multi_polygon res = {cur[0]}, temp;
-
-	for (int i = 1; i < 4; ++i) {
-		bg::union_(res, cur[i], temp);
-		res = temp;
-		temp.clear();
-	}
-
-	storage_ = res;
-*/
 }
 
 RArea::RArea(const std::vector<std::pair<int, int>>& data, const std::vector<int>& lines) {
@@ -108,13 +49,8 @@ RArea::RArea(const std::vector<std::pair<int, int>>& data, const std::vector<int
 
 	polygon cur;
 
-	//bg::append(cur, point(points[0][0].first, points[0][0].second));
-	//bg::append(cur, point(points[0][1].first, points[0][1].second));
-
 	for (int i = 0; i < points.size(); ++i)
 		bg::append(cur, point(points[i][0].first, points[i][0].second));
-
-	//bg::append(cur, point(points[points.size()-1][1].first, points[points.size()-1][1].second));
 
 	for (int i = static_cast<int>(points.size()) - 1; i >= 0; --i)
 		bg::append(cur, point(points[i][1].first, points[i][1].second));
@@ -188,12 +124,9 @@ RArea Intersection(RArea r1, RArea r2) {
 
 	multi_polygon res;
 
-	//std::cout << RArea(r1.GetStorage()).Square() << " " << RArea(r2.GetStorage()).Square() << std::endl; 
-	//std::vector<multi_polygon> res;
 	bg::intersection(r1.GetStorage(), r2.GetStorage(), res);
 	bg::correct(res);
 
-	//std::cout << res.size() << std::endl;
 	return RArea(res);
 }
 

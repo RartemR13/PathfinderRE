@@ -13,6 +13,7 @@ public:
 	int GetWellNum(std::pair<int, int> coords) const;
 	std::pair<int, int> GetWellCoords(int num) const;
 	RArea GetWellCoat(int num) const;
+	std::pair<int, int> GetOldCoords(int num) const; 
 
 private:
 	std::vector<RArea> storage_;
