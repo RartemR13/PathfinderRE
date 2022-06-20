@@ -255,10 +255,17 @@ void PathHelper::WriteXPSPath(std::ofstream& out) {
 void PathHelper::Optimize() {
 	std::ofstream out("tsp_file.tsp", std::ios::out);
 
-	out << "DIMENSION : " << path_.size() << "\n";
+	out << "DIMENSION : " << path_.size() + 1<< "\n";
 	out << "EDGE_WEIGHT_TYPE : EXPLICIT\n";
 	out << "EDGE_WEIGHT_FORMAT : FULL_MATRIX\n";
 	out << "EDGE_WEIGHT_SECTION\n";
+
+	int max_edge = 0;
+	for(int i = 0; i < path_.size(); ++i){
+		for(int j = i + 1; j < path_.size(); ++j){
+			max_edge = std::max(max_edge, SimSum(path_[i], path_[j]));
+		}
+	}
 
 	for (int i = 0; i < path_.size(); ++i) {
 		for (int j = 0; j < path_.size(); ++j) {
@@ -266,12 +273,15 @@ void PathHelper::Optimize() {
 				out << INT_MAX << " ";
 				continue;
 			}
-
 			out << SimSum(path_[i], path_[j]) << " ";
 		}
-
+		out << max_edge + 1 << " "; //фейковая ноду
 		out << "\n";
 	}
+	for(int i = 0; i < path_.size(); ++i) {
+		out << max_edge + 1 << " "; //фейковая ноду
+	}
+	out << INT_MAX << "\n";
 
 	out << "EOF\n";
 	out.close();
@@ -305,38 +315,51 @@ void PathHelper::Optimize() {
 
 	std::vector<std::vector<int>> edges;
 
-	for (int i = 0; i < path_.size(); ++i) {
+	for (int i = 0; i < path_.size() + 1; ++i) {
 		int v, to, weight;
 		in >> v >> to >> weight;
 		edges.push_back({v, to, weight});
 	}
 	in.close();
 
-	int maxEdgeWeight = -1,
-		maxEdgeNum = -1;
+	int fakeEdgeFromNum = -1,
+		fakeEdgeToNum = -1;
 
-	for (int i = 0; i < edges.size(); ++i)
-		if (edges[i][2] > maxEdgeWeight) {
-			maxEdgeWeight = edges[i][2];
-			maxEdgeNum = i; 
+	for (int i = 0; i < edges.size(); ++i){
+		if (edges[i][1] == path_.size()) {
+			fakeEdgeToNum = i; 
 		}
+		if (edges[i][0] == path_.size()) {
+			fakeEdgeFromNum = i; 
+		}
+	}
 
 	auto oldPath = path_;
 
 	path_.clear();
 
-	for (int i = maxEdgeNum+1; i < edges.size(); ++i) {
-		if (path_.empty() or path_.back() != edges[i][0])
-			path_.push_back(edges[i][0]);
-		if (path_.empty() or path_.back() != edges[i][1])
-			path_.push_back(edges[i][1]);
-	}
+	if (fakeEdgeToNum < fakeEdgeFromNum){
+		for (int i = fakeEdgeFromNum + 1; i < edges.size(); ++i) {
+			if (path_.empty() or path_.back() != edges[i][0])
+				path_.push_back(edges[i][0]);
+			if (path_.empty() or path_.back() != edges[i][1])
+				path_.push_back(edges[i][1]);
 
-	for (int i = 0; i < maxEdgeNum; ++i) {
-		if (path_.empty() or path_.back() != edges[i][0])
-			path_.push_back(edges[i][0]);
-		if (path_.empty() or path_.back() != edges[i][1])
-			path_.push_back(edges[i][1]);
+		}
+		for (int i = 0; i < fakeEdgeToNum; ++i) {
+			if (path_.empty() or path_.back() != edges[i][0])
+				path_.push_back(edges[i][0]);
+			if (path_.empty() or path_.back() != edges[i][1])
+				path_.push_back(edges[i][1]);
+		}	
+	}
+	else{
+		for (int i = fakeEdgeFromNum + 1; i < fakeEdgeToNum; ++i) {
+			if (path_.empty() or path_.back() != edges[i][0])
+				path_.push_back(edges[i][0]);
+			if (path_.empty() or path_.back() != edges[i][1])
+				path_.push_back(edges[i][1]);
+		}
 	}
 
 	for (int i = 0; i < path_.size(); ++i)

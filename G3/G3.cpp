@@ -25,7 +25,23 @@ G3::G3(const XPSHelper& hlp, int k) :
 
 	UniqueField();
 	SetCoats();
+
+	G3VertexInG1Vertex_.resize(xpsHlp_.GetWellCount());
+	for (int i = 0; i < vertex_.size(); ++i)
+		for (int g1Vertex : vertex_[i])
+			G3VertexInG1Vertex_[g1Vertex].push_back(i);
+
 	SetAdjList();
+
+	vertexCoord_.resize(vertex_.size());
+	for (int i = 0; i < vertexCoord_.size(); ++i) {
+		for (int j = 0; j < vertex_[i].size(); ++j) {
+			vertexCoord_[i].push_back(xpsHlp_.GetWellCoords(vertex_[i][j]));
+		}
+	}
+
+	for (int i = 0; i < vertexCoord_.size(); ++i)
+		coordVertex_[vertexCoord_[i]] = i;
 }
 
 std::vector<std::pair<int, int>> Intersection(std::vector<std::pair<int, int>> form, const std::set<std::pair<int, int>> wellsCoords) {
@@ -108,13 +124,57 @@ void G3::SetCoats() {
 
 void G3::SetAdjList() {
 	adjList_.resize(vertex_.size());
+
+	std::vector<std::pair<int, int>> dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+	std::set<std::pair<int, int>> wellsCoords;
+	for (int i = 0; i < xpsHlp_.GetWellCount(); ++i)
+		wellsCoords.insert(xpsHlp_.GetWellCoords(i));
+
+	for (int i = 0; i < adjList_.size(); ++i) {
+		std::set<int> edgeEst;
+		std::set<int> curG3VertexEst;
+		for (int g1Vertex : vertex_[i])
+			curG3VertexEst.insert(g1Vertex);
+		
+		for (int g1Vertex : vertex_[i]) {
+			std::pair<int, int> g1VertexCoord = xpsHlp_.GetWellCoords(g1Vertex);
+
+			for (auto dir : dirs) {
+				auto g3NVertexCoord = g1VertexCoord;
+				g3NVertexCoord.first += dir.first;
+				g3NVertexCoord.second += dir.second;
+
+				if (wellsCoords.count(g3NVertexCoord)) {
+					int g1NVertex = xpsHlp_.GetWellNum(g3NVertexCoord);
+					for (int g3Vertex : G3VertexInG1Vertex_[g1NVertex])
+						edgeEst.insert(g3Vertex);
+				}
+			}
+		}
+
+		for (int g3Vertex : edgeEst) {
+			bool doAdd = true;
+			for (int g1Vertex : vertex_[g3Vertex])
+				if (curG3VertexEst.count(g1Vertex)) {
+					doAdd = false;
+					break;
+				}
+
+			if (doAdd)
+				adjList_[i].push_back(g3Vertex);
+		}
+
+		//std::cout << adjList_[i].size() << std::endl;
+	}
+
+/*
 	for (int i = 0; i < vertex_.size(); ++i)
 		for (int j = i + 1; j < vertex_.size(); ++j)
 			if (IntersectionSize(coat_[i], coat_[j]) > std::max(coat_[i].Square(), coat_[j].Square()) / 2) {
 				adjList_[i].push_back(j);
 				adjList_[j].push_back(i);
 			}
-
+*/
 	std::cout << "Set Adj List OK" << std::endl;
 }
 
@@ -136,4 +196,12 @@ const int G3::GetK() const {
 
 const XPSHelper& G3::GetXPSHelper() const {
 	return xpsHlp_;
+}
+
+const std::vector<std::pair<int, int>>& G3::GetVertexCoord(int vertex) const {
+	return vertexCoord_[vertex];
+}
+
+int G3::GetVertexNum(std::vector<std::pair<int, int>> vertexCoord) const {
+	return coordVertex_.at(vertexCoord);
 }
