@@ -75,10 +75,10 @@ XPSHelper::XPSHelper(const char* XPSFilePath) {
 		int X = GetVertexX(curXpsLine),
 			Y = GetVertexY(curXpsLine);
 
-		oldGeometry_.push_back({X, Y});
-
-		if (geometry_.empty() || geometry_.back() != std::make_pair(X - SubX, Y - SubY))
+		if (geometry_.empty() || geometry_.back() != std::make_pair(X - SubX, Y - SubY)) {
 			geometry_.push_back({X - SubX, Y - SubY});
+			oldGeometry_.push_back({X, Y});
+		}
 	}
 
 	std::cout << "Old Geometry OK" << std::endl;

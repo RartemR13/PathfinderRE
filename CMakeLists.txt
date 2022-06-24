@@ -24,6 +24,10 @@ add_subdirectory(XPSHelper)
 target_link_libraries(Pathfinder PUBLIC XPSHelper)
 target_include_directories(Pathfinder PUBLIC XPSHelper)
 
+add_subdirectory(KLines)
+target_link_libraries(Pathfinder PUBLIC KLines)
+target_include_directories(Pathfinder PUBLIC KLines)
+
 add_subdirectory(TimeChecker)
 target_link_libraries(Pathfinder PUBLIC TimeChecker)
 target_include_directories(Pathfinder PUBLIC TimeChecker)
