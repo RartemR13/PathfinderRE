@@ -40,6 +40,10 @@ add_subdirectory(PathHelper)
 target_link_libraries(Pathfinder PUBLIC PathHelper)
 target_include_directories(Pathfinder PUBLIC PathHelper)
 
+add_subdirectory(AdjListSaver)
+target_link_libraries(Pathfinder PUBLIC AdjListSaver)
+target_include_directories(Pathfinder PUBLIC AdjListSaver)
+
 add_custom_target(vis
 	${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/vis.py ${CMAKE_CURRENT_BINARY_DIR}/vis.py
 )

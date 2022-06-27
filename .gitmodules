@@ -1,3 +1,6 @@
 [submodule "TimeChecker"]
 	path = TimeChecker
 	url = https://github.com/RartemR13/TimeChecker
+[submodule "AdjListSaver/SHA256"]
+	path = AdjListSaver/SHA256
+	url = https://github.com/System-Glitch/SHA256

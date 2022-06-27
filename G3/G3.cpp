@@ -1,4 +1,5 @@
 #include "G3.hpp"
+#include "../AdjListSaver/AdjListSaver.hpp"
 
 #include <set>
 #include <iostream>
@@ -22,6 +23,8 @@ G3::G3(const XPSHelper& hlp, int k) :
 			if (i != j)
 				AddWellsField(j, i, wellsCoords);
 		}
+
+	std::sort(forms_.begin(), forms_.end());
 
 	UniqueField();
 	SetCoats();
@@ -54,6 +57,8 @@ std::vector<std::pair<int, int>> Intersection(std::vector<std::pair<int, int>> f
 }
 
 void G3::AddWellsField(int w, int h, const std::set<std::pair<int, int>> wellsCoords) {
+	forms_.push_back(std::make_pair(w, h));
+
 	int maxX = 0,
 		maxY = 0;
 
@@ -123,46 +128,63 @@ void G3::SetCoats() {
 }
 
 void G3::SetAdjList() {
-	adjList_.resize(vertex_.size());
+	AdjListSaver als;
 
-	std::vector<std::pair<int, int>> dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-	std::set<std::pair<int, int>> wellsCoords;
-	for (int i = 0; i < xpsHlp_.GetWellCount(); ++i)
-		wellsCoords.insert(xpsHlp_.GetWellCoords(i));
+	try {
+		als.Pull();
+		if (not als.CheckHash(forms_))
+			throw std::runtime_error("");
 
-	for (int i = 0; i < adjList_.size(); ++i) {
-		std::set<int> edgeEst;
-		std::set<int> curG3VertexEst;
-		for (int g1Vertex : vertex_[i])
-			curG3VertexEst.insert(g1Vertex);
-		
-		for (int g1Vertex : vertex_[i]) {
-			std::pair<int, int> g1VertexCoord = xpsHlp_.GetWellCoords(g1Vertex);
+		adjList_ = als.Get();
+	} catch(...) {
 
-			for (auto dir : dirs) {
-				auto g3NVertexCoord = g1VertexCoord;
-				g3NVertexCoord.first += dir.first;
-				g3NVertexCoord.second += dir.second;
+		adjList_.resize(vertex_.size());
 
-				if (wellsCoords.count(g3NVertexCoord)) {
-					int g1NVertex = xpsHlp_.GetWellNum(g3NVertexCoord);
-					for (int g3Vertex : G3VertexInG1Vertex_[g1NVertex])
-						edgeEst.insert(g3Vertex);
+		std::vector<std::pair<int, int>> dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+		std::set<std::pair<int, int>> wellsCoords;
+		for (int i = 0; i < xpsHlp_.GetWellCount(); ++i)
+			wellsCoords.insert(xpsHlp_.GetWellCoords(i));
+
+		for (int i = 0; i < adjList_.size(); ++i) {
+			std::set<int> edgeEst;
+			std::set<int> curG3VertexEst;
+			for (int g1Vertex : vertex_[i])
+				curG3VertexEst.insert(g1Vertex);
+			
+			for (int g1Vertex : vertex_[i]) {
+				std::pair<int, int> g1VertexCoord = xpsHlp_.GetWellCoords(g1Vertex);
+
+				for (auto dir : dirs) {
+					auto g3NVertexCoord = g1VertexCoord;
+					g3NVertexCoord.first += dir.first;
+					g3NVertexCoord.second += dir.second;
+
+					if (wellsCoords.count(g3NVertexCoord)) {
+						int g1NVertex = xpsHlp_.GetWellNum(g3NVertexCoord);
+						for (int g3Vertex : G3VertexInG1Vertex_[g1NVertex])
+							edgeEst.insert(g3Vertex);
+					}
 				}
+			}
+
+			for (int g3Vertex : edgeEst) {
+				bool doAdd = true;
+				for (int g1Vertex : vertex_[g3Vertex])
+					if (curG3VertexEst.count(g1Vertex)) {
+						doAdd = false;
+						break;
+					}
+
+				if (doAdd)
+					adjList_[i].push_back(g3Vertex);
 			}
 		}
 
-		for (int g3Vertex : edgeEst) {
-			bool doAdd = true;
-			for (int g1Vertex : vertex_[g3Vertex])
-				if (curG3VertexEst.count(g1Vertex)) {
-					doAdd = false;
-					break;
-				}
+		als.SetAdjList(adjList_);
+		als.SetHash(forms_);
 
-			if (doAdd)
-				adjList_[i].push_back(g3Vertex);
-		}
+		als.DumpAdjList();
+		als.DumpFormsHash();
 	}
 
 	std::cout << "Set Adj List OK" << std::endl;

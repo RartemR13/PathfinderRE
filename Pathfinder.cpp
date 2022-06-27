@@ -42,18 +42,18 @@ void WritePath(const std::vector<std::vector<int>>& path,
 int main(int argc, char* argv[]) {
 	TimeChecker checkTime;
 	XPSHelper xps(argv[1]);
-//	G3 g3(xps, 4);
+	G3 g3(xps, 20);
 
-	KLines klines(xps);
-	auto blockPath = klines.CreateBlockPath(13, KLineDirection::DOWN_VERTICAL, KLineFrom::FROM_LEFT);
-
+//	KLines klines(xps);
+//	auto blockPath = klines.CreateBlockPath(13, KLineDirection::DOWN_VERTICAL, KLineFrom::FROM_LEFT);
 /*
+
 	for (int i = 0; i < blockPath.size(); ++i) {
 		for (int j = 0; j < blockPath[i].size(); ++j)
 			std::cout << blockPath[i][j] << " ";
 		std::cout << std::endl;
 	}
-
+*/
 	std::ofstream out("vis.txt", std::ios::out);
 	PathHelper ph(g3);
 
@@ -62,12 +62,13 @@ int main(int argc, char* argv[]) {
 		out << g3.GetXPSHelper().GetWellCoords(i).first << " " << g3.GetXPSHelper().GetWellCoords(i).second << "\n";
 	out << "\n";
 
-	ph.FindPath(std::vector<int>{0, 1, 2, 3});
+	ph.FindPath(std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+								 10, 11, 12, 13, 14, 15, 16, 17, 18, 19});
 	ph.Optimize();
 
 	ph.WritePath(out);
 	out.close();
-*/
+/*
 	std::ofstream out("visLeha.txt", std::ios::out);
 	WriteXPSPath(blockPath, xps, out);
 	out.close();
@@ -75,12 +76,12 @@ int main(int argc, char* argv[]) {
 	out.open("vis.txt", std::ios::out);
 	WritePath(blockPath, xps, out);
 	out.close();
+*/
 
-/*
 	out.open("visLeha.txt", std::ios::out);
 	ph.WriteXPSPath(out);
 	out.close();
-*/
+
 
 	return 0;
 }

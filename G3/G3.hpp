@@ -36,6 +36,8 @@ private:
 	std::map<std::vector<std::pair<int, int>>, int> coordVertex_;
 	std::vector<std::vector<int>> G3VertexInG1Vertex_;
 
+	std::vector<std::pair<int, int>> forms_;
+
 	const XPSHelper& xpsHlp_;
 	const int K_;
 };
