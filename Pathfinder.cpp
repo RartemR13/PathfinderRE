@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 //	G3 g3(xps, 4);
 
 	KLines klines(xps);
-	auto blockPath = klines.CreateBlockPath(23, KLineDirection::DOWN_VERTICAL);
+	auto blockPath = klines.CreateBlockPath(13, KLineDirection::DOWN_VERTICAL, KLineFrom::FROM_LEFT);
 
 /*
 	for (int i = 0; i < blockPath.size(); ++i) {

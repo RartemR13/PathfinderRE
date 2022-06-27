@@ -25,7 +25,7 @@ const std::vector<std::vector<int>>& KLines::GetField() const {
 	return field_;
 }
 
-std::vector<std::vector<int>> KLines::CreateBlockPath(int k, KLineDirection dir) const {
+std::vector<std::vector<int>> KLines::CreateBlockPath(int k, KLineDirection dir, KLineFrom from) const {
 	std::vector<std::vector<int>> cur;
 
 	switch(dir) {
@@ -59,7 +59,7 @@ std::vector<std::vector<int>> KLines::CreateBlockPath(int k, KLineDirection dir)
 		}
 	}
 
-	bool fromFront = true;
+	bool fromFront = (from == KLineFrom::FROM_LEFT) ? true : false;
 	int wellCount = xpsHelper_.GetWellCount();
 
 	int div = k,
@@ -69,6 +69,12 @@ std::vector<std::vector<int>> KLines::CreateBlockPath(int k, KLineDirection dir)
 	std::vector<int> flush;
 
 	for (const auto& line : cur) {
+		if (fromFront and not flush.empty() and not xpsHelper_.IsNeighbours(flush.back(), line.front()) and xpsHelper_.IsNeighbours(flush.back(), line.back()))
+			fromFront = not fromFront;
+
+		if (not fromFront and not flush.empty() and xpsHelper_.IsNeighbours(flush.back(), line.front()) and not xpsHelper_.IsNeighbours(flush.back(), line.back()))
+			fromFront = not fromFront;
+
 		int curFlush = div + (mod > 0);
 		mod--;
 

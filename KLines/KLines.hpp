@@ -8,12 +8,17 @@ enum KLineDirection {
 	UP_GORIZONTAL
 };
 
+enum KLineFrom {
+	FROM_LEFT,
+	FROM_RIGHT
+};
+
 class KLines {
 public:
 	KLines(const XPSHelper& xpsHelper);
 
 	const std::vector<std::vector<int>>& GetField() const;
-	std::vector<std::vector<int>> CreateBlockPath(int k, KLineDirection dir) const;
+	std::vector<std::vector<int>> CreateBlockPath(int k, KLineDirection dir, KLineFrom) const;
 
 private:
 	const XPSHelper& xpsHelper_;
