@@ -64,6 +64,7 @@ int main(int argc, char* argv[]) {
 
 	//ph.FindPath(std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 	ph.SimAnn(10000, 0.95, 100, std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, true);
+	//ph.FindPath(std::vector<int>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
 	ph.Optimize();
 
 	ph.WritePath(out);

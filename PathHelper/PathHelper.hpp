@@ -46,6 +46,10 @@ private:
 	bool VertexEqu(int lhs, int rhs);
 	Direction GetDirection(int lhs, int rhs);
 	std::vector<std::pair<int, int>> GetVertexGeometry(int vertex);
+	int GetNext(std::set<int>& curField, std::vector<std::vector<int>>& que, std::vector<int>& p,
+				int& last, Direction& lastDirection);
+
+	std::pair<int, int> Size(int v);
 
 	std::pair<int, int> Size(int v);
 

@@ -33,37 +33,6 @@ Direction Opposite(Direction d) {
 }
 
 Direction PathHelper::GetDirection(int lhs, int rhs) {
-/*
-	if (not VertexEqu(lhs, rhs))
-		return Direction::RANDOM;
-
-	auto lhsGeom = GetVertexGeometry(lhs),
-		 rhsGeom = GetVertexGeometry(rhs);
-
-	std::sort(lhsGeom.begin(), lhsGeom.end());
-	std::sort(rhsGeom.begin(), rhsGeom.end());
-
-	std::vector<std::pair<int, int>> GeomD;
-	for (int i = 0; i < rhsGeom.size(); ++i)
-		GeomD.push_back(std::make_pair(rhsGeom[i].first - lhsGeom[i].first, rhsGeom[i].second - lhsGeom[i].second));
-
-	for (int i = 1; i < GeomD.size(); ++i)
-		if (GeomD[i] != GeomD[i-1])
-			return Direction::RANDOM;
-
-	std::pair<int, int> curD = GeomD.front();
-
-	if (curD == std::make_pair(1, 0))
-		return Direction::RIGHT;
-	else if (curD == std::make_pair(-1, 0))
-		return Direction::LEFT;
-	else if (curD == std::make_pair(0, 1))
-		return Direction::UP;
-	else if (curD == std::make_pair(0, -1))
-		return Direction::DOWN;
-
-	return Direction::RANDOM;
-*/
 	auto lhsGeom = GetVertexGeometry(lhs),
 		 rhsGeom = GetVertexGeometry(rhs);
 
@@ -183,88 +152,85 @@ void PathHelper::GenQue(int num, std::vector<std::vector<int>>& toQue, const std
 }
 
 int PathHelper::GetNext(std::set<int>& curField, std::vector<std::vector<int>>& que, std::vector<int>& p,
-						int& last, Direction& lastDirection)
-{
+						int& last, Direction& lastDirection) {
 	int next = -1;
-	bool canGoForward = false;
+	bool canGoForw = false;
 	bool isUturn = false;
 	std::vector<int> candidate;
 
+	//пытаемся пойти вперед и не сильно изменить форму
 	for (int i = que.size() - 1; i > 0; --i) {
-		if (que[i].empty())
+		if(que[i].empty())
 			continue;
-
 		for (const auto& vertex : que[i]) {
 			if (GetDirection(last, vertex) == lastDirection) {
-				canGoForward = true;
-				auto last_sz = Size(last);
-				auto vertex_sz = Size(vertex);
+				canGoForw = true;
+				auto lastSz = Size(last);
+				auto vertexSz = Size(vertex);
 				if (IsHorisontal(lastDirection) && 
-				   (last_sz.second <= vertex_sz.second || 
-					last_sz.second >= vertex_sz.second && 1.0 * last_sz.second / vertex_sz.second <= 2) ||
+				   (lastSz.second <= vertexSz.second || 
+					lastSz.second >= vertexSz.second && 1.0 * lastSz.second / vertexSz.second <= 2) ||
 					IsVertical(lastDirection) &&
-					(last_sz.first <= vertex_sz.first ||
-						last_sz.first >= vertex_sz.first && 1.0 * last_sz.first / vertex_sz.first <= 2)) {
+					(lastSz.first <= vertexSz.first ||
+						lastSz.first >= vertexSz.first && 1.0 * lastSz.first / vertexSz.first <= 2)) {
 						candidate.push_back(vertex);
 				}
 			}
 		}
 	}
 
-	if (not candidate.empty()) {
-		std::sort(candidate.begin(), candidate.end(),
-		[&](int lhs, int rhs) {
+	if (!candidate.empty()) {
+		std::sort(candidate.begin(), candidate.end(), [&](int lhs, int rhs) {
 			if (IsVertical(lastDirection))
 				return Size(lhs).first > Size(rhs).first;
 			return Size(lhs).second > Size(rhs).second;
-		});
-
-		next = candidate.front();
+			});
+		next = candidate[0];
 	}
 
-	if (next == -1 and not canGoForward) {
+	//уперлись в стенку и можем развернуться
+	if (next == -1 && !canGoForw) {
 		candidate.clear();
 		for (int i = que.size() - 1; i > 0; --i) {
-			if (que[i].empty())
+			if(que[i].empty())
 				continue;
 
 			for (const auto& vertex : que[i]) {
-				if (IsPerpendicular(lastDirection, GetDirection(last, vertex)))
+				if (IsPerpendicular(lastDirection, GetDirection(last, vertex))) {
 					candidate.push_back(vertex);
+				}
 			}
 		}
 
-		if (not candidate.empty()) {
+		if(!candidate.empty()) {
 			isUturn = true;
-			std::sort(candidate.begin(), candidate.end(),
-			[&](int lhs, int rhs) {
-				if (Size(last).first > Size(last).second)
+			std::sort(candidate.begin(), candidate.end(), [&](int lhs, int rhs) {
+				if(Size(last).first > Size(last).second)
 					return Size(lhs).first > Size(rhs).first;
 				return Size(lhs).second > Size(rhs).second;
-			});
-			next = candidate.front();
+				});
+			next = candidate[0];
 		}
 	}
 
+	//можем пойти вперед но сильно меняем форму, или не вперед
 	if (next == -1) {
 		for (int i = que.size() - 1; i > 0; --i) {
-			if (que[i].empty())
+			if(que[i].empty())
 				continue;
-
 			next = que[i][0];
 			candidate.clear();
-			for (const auto& vertex : que[i])
-				if (SimSum(last, next) == SimSum(last, vertex) and 
-					VertexEqu(last, vertex)) 
-				{
+			for(const auto& vertex : que[i])
+				if(SimSum(last, next) == SimSum(last, vertex) &&
+					VertexEqu(last, vertex)) {
 					candidate.push_back(vertex);
 				}
 
-			if (not candidate.empty()) {
-				next = candidate.front();
-				if (lastDirection != Direction::RANDOM) {
-					for (const auto& vertex : candidate) {
-						if (VertexEqu(last, vertex) and GetDirection(last, vertex) == lastDirection) {
+			if(!candidate.empty()) {
+				next = candidate[0];
+				if(lastDirection != Direction::RANDOM) {
+					for(const auto& vertex : candidate) {
+						if(VertexEqu(last, vertex) && GetDirection(last, vertex) == lastDirection) {
 							next = vertex;
 							break;
 						}
@@ -272,18 +238,20 @@ int PathHelper::GetNext(std::set<int>& curField, std::vector<std::vector<int>>& 
 				}
 			}
 
-			if (next != -1)
+			if(next != -1) {
 				break;
+			}
 		}
 	}
 
-	if (next == -1) {
+	//если не нашли адекватного дитя идем к предку-предку
+	if(next == -1) {
 		candidate.clear();
 		int cur = p[last];
-		if (cur == last)
+		if(cur == last)
 			throw std::runtime_error("Bad dads");
 
-		for (int i = 0; i < que.size(); ++i)
+		for(int i = 0; i < que.size(); ++i)
 			que[i].clear();
 
 		GenQue(cur, que, curField);
@@ -292,22 +260,24 @@ int PathHelper::GetNext(std::set<int>& curField, std::vector<std::vector<int>>& 
 		return GetNext(curField, que, p, last, lastDirection);
 	}
 
-	if (not isUturn and next != -1) {
+	if(!isUturn && next != -1) {
 		lastDirection = GetDirection(last, next);
-	} else {
+	}
+	else {
 		lastDirection = Opposite(lastDirection);
 	}
 
 	AddField(next, curField);
 	p[next] = last;
+	
+	std::cout << curField.size() << "/" << g3_.GetXPSHelper().GetWellCount() << std::endl;
 	last = next;
 	
-	for (int i = 0; i < que.size(); ++i)
+	for(int i = 0; i < que.size(); ++i)
 		que[i].clear();
 	GenQue(next, que, curField);
 	return next;
 }
-
 
 void PathHelper::SimAnn(double startTemp, double speed, double minTemp, std::vector<int> st, bool pathEst) {
 	if (not pathEst)
@@ -425,16 +395,18 @@ int PathHelper::GetPathSize() {
 void PathHelper::FindPath(std::vector<int> st) {
 	std::cout << "Start Find Path" << std::endl;
 	int stNum = FindVertex(st);
+
 	std::cout << "Vertex Num: " << stNum << std::endl;
 	std::set<int> curField;
+
 	std::vector<std::vector<int>> que(g3_.GetK() + 1);
 	std::vector<int> p(g3_.GetVertex().size(), -1);
+
 	que[st.size()].push_back(stNum);
 	int last = stNum;
 	Direction lastDirection = Size(last).first <= Size(last).second ? Direction::RIGHT : Direction::DOWN;
 
 	while (curField.size() < g3_.GetXPSHelper().GetWellCount()) {
-		std::cout << curField.size() << std::endl;
 		path_.push_back(GetNext(curField, que, p, last, lastDirection));
 	}
 }
