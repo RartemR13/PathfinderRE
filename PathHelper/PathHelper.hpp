@@ -26,6 +26,16 @@ public:
 
 	void Optimize();
 
+	int GetNext(std::set<int>& curField, std::vector<std::vector<int>>& que, std::vector<int>& p,
+				int& last, Direction& lastDirection);
+
+	int GetPathSize();
+	void SimAnn(double startTemp, double speed, double minTemp, std::vector<int> st, bool pathEst);
+
+	void WriteG3Path(std::ofstream& out);
+
+	void ReadG3Path(std::ifstream& in);
+
 private:
 	int FindVertex(std::vector<int> st);
 	void AddField(int num, std::set<int>& toAdd);
@@ -36,6 +46,8 @@ private:
 	bool VertexEqu(int lhs, int rhs);
 	Direction GetDirection(int lhs, int rhs);
 	std::vector<std::pair<int, int>> GetVertexGeometry(int vertex);
+
+	std::pair<int, int> Size(int v);
 
 	std::vector<int> path_;
 	const G3& g3_;

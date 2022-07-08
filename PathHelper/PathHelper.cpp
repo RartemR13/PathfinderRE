@@ -14,7 +14,26 @@ std::vector<std::pair<int, int>> PathHelper::GetVertexGeometry(int vertex) {
 	return ret;
 }
 
+bool IsHorisontal(Direction d) {
+	return d == Direction::RIGHT || d == Direction::LEFT;
+}
+
+bool IsVertical(Direction d) {
+	return d == Direction::DOWN || d == Direction::UP;
+}
+
+bool IsPerpendicular(Direction d1, Direction d2) {
+	return IsVertical(d1) && IsHorisontal(d2) || IsVertical(d2) && IsHorisontal(d1);
+}
+
+Direction Opposite(Direction d) {
+	if(IsVertical(d))
+		return d == Direction::DOWN ? Direction::UP : Direction::DOWN;
+	return d == Direction::RIGHT ? Direction::LEFT : Direction::RIGHT;
+}
+
 Direction PathHelper::GetDirection(int lhs, int rhs) {
+/*
 	if (not VertexEqu(lhs, rhs))
 		return Direction::RANDOM;
 
@@ -44,7 +63,54 @@ Direction PathHelper::GetDirection(int lhs, int rhs) {
 		return Direction::DOWN;
 
 	return Direction::RANDOM;
+*/
+	auto lhsGeom = GetVertexGeometry(lhs),
+		 rhsGeom = GetVertexGeometry(rhs);
+
+	std::sort(lhsGeom.begin(), lhsGeom.end());
+	std::sort(rhsGeom.begin(), rhsGeom.end());
+
+	int lower_boundl = lhsGeom[0].second;
+	int upper_boundl = lhsGeom[lhsGeom.size() - 1].second;
+	int left_boundl = lhsGeom[0].first;
+	int right_boundl = lhsGeom[lhsGeom.size() - 1].first;
+
+	int lower_boundr = rhsGeom[0].second;
+	int upper_boundr = rhsGeom[rhsGeom.size() - 1].second;
+	int left_boundr = rhsGeom[0].first;
+	int right_boundr = rhsGeom[rhsGeom.size() - 1].first;
+
+	if(lower_boundl <= lower_boundr && upper_boundl >= upper_boundr || 
+		lower_boundl >= lower_boundr && upper_boundl <= upper_boundr) {
+		if(right_boundl <= left_boundr) {
+			return Direction::RIGHT;
+		}
+		else if (left_boundl >= right_boundr) {
+			return Direction::LEFT;
+		}
+	}
+	else if(left_boundl <= left_boundr && right_boundl >= right_boundr ||
+		left_boundl >= left_boundr && right_boundl <= right_boundr) {
+		if(lower_boundl >= upper_boundr) {
+			return Direction::DOWN;
+		}
+		else if(upper_boundl <= lower_boundr) {
+			return Direction::UP;
+		}
+	}
+	return Direction::RANDOM;
 }
+
+std::pair<int, int> PathHelper::Size(int v) {
+	auto geom = GetVertexGeometry(v);
+	std::sort(geom.begin(), geom.end());
+	int lower_bound = geom[0].second;
+	int upper_bound = geom[geom.size() - 1].second;
+	int left_bound = geom[0].first;
+	int right_bound = geom[geom.size() - 1].first;
+	return std::make_pair(right_bound - left_bound + 1, upper_bound - lower_bound + 1);
+}
+
 
 bool PathHelper::VertexEqu(int lhs, int rhs) {
 	auto lhsGeom = GetVertexGeometry(lhs),
@@ -116,61 +182,89 @@ void PathHelper::GenQue(int num, std::vector<std::vector<int>>& toQue, const std
 		});
 }
 
-void PathHelper::FindPath(std::vector<int> st) {
-	std::cout << "Start Find Path" << std::endl;
+int PathHelper::GetNext(std::set<int>& curField, std::vector<std::vector<int>>& que, std::vector<int>& p,
+						int& last, Direction& lastDirection)
+{
+	int next = -1;
+	bool canGoForward = false;
+	bool isUturn = false;
+	std::vector<int> candidate;
 
-	int stNum = FindVertex(st);
+	for (int i = que.size() - 1; i > 0; --i) {
+		if (que[i].empty())
+			continue;
 
-	std::cout << "Vertex Num: " << stNum << std::endl;
+		for (const auto& vertex : que[i]) {
+			if (GetDirection(last, vertex) == lastDirection) {
+				canGoForward = true;
+				auto last_sz = Size(last);
+				auto vertex_sz = Size(vertex);
+				if (IsHorisontal(lastDirection) && 
+				   (last_sz.second <= vertex_sz.second || 
+					last_sz.second >= vertex_sz.second && 1.0 * last_sz.second / vertex_sz.second <= 2) ||
+					IsVertical(lastDirection) &&
+					(last_sz.first <= vertex_sz.first ||
+						last_sz.first >= vertex_sz.first && 1.0 * last_sz.first / vertex_sz.first <= 2)) {
+						candidate.push_back(vertex);
+				}
+			}
+		}
+	}
 
-	std::set<int> curField;
-	std::vector<std::vector<int>> que(g3_.GetK() + 1);
-	std::vector<int> p(g3_.GetVertex().size(), -1);
+	if (not candidate.empty()) {
+		std::sort(candidate.begin(), candidate.end(),
+		[&](int lhs, int rhs) {
+			if (IsVertical(lastDirection))
+				return Size(lhs).first > Size(rhs).first;
+			return Size(lhs).second > Size(rhs).second;
+		});
 
-	que[st.size()].push_back(stNum);
+		next = candidate.front();
+	}
 
-	int last = stNum;
-	Direction lastDirection = Direction::RANDOM;
+	if (next == -1 and not canGoForward) {
+		candidate.clear();
+		for (int i = que.size() - 1; i > 0; --i) {
+			if (que[i].empty())
+				continue;
 
-	while (curField.size() < g3_.GetXPSHelper().GetWellCount()) {
-		int next = -1;
-
-		if (g3_.GetVertex()[last] == std::vector<int>{4104, 4178}) {
-			for (int i = 0; i < que.size(); ++i) {
-				std::cout << "que[" << i << "]: " << que[i].size() << std::endl;
-				for (int j = 0; j < que[i].size(); ++j) {
-					for (int v : g3_.GetVertex()[que[i][j]])
-						std::cout << v << " ";
-					std::cout << "\n";
-
-					std::cout << "Sim Sum: " << SimSum(last, que[i][j]) << std::endl << std::endl;
-				} 
+			for (const auto& vertex : que[i]) {
+				if (IsPerpendicular(lastDirection, GetDirection(last, vertex)))
+					candidate.push_back(vertex);
 			}
 		}
 
+		if (not candidate.empty()) {
+			isUturn = true;
+			std::sort(candidate.begin(), candidate.end(),
+			[&](int lhs, int rhs) {
+				if (Size(last).first > Size(last).second)
+					return Size(lhs).first > Size(rhs).first;
+				return Size(lhs).second > Size(rhs).second;
+			});
+			next = candidate.front();
+		}
+	}
+
+	if (next == -1) {
 		for (int i = que.size() - 1; i > 0; --i) {
-			if (que[i].size() == 0)
+			if (que[i].empty())
 				continue;
 
-			std::cout << curField.size() << "/" << g3_.GetXPSHelper().GetWellCount() << "\n"; 
-			next = que[i].front();
-
-			std::vector<int> newNextPret;
+			next = que[i][0];
+			candidate.clear();
 			for (const auto& vertex : que[i])
-				if (SimSum(last, next) == SimSum(last, vertex) and
-					VertexEqu(last, vertex))
+				if (SimSum(last, next) == SimSum(last, vertex) and 
+					VertexEqu(last, vertex)) 
 				{
-					newNextPret.push_back(vertex);
+					candidate.push_back(vertex);
 				}
 
-			if (newNextPret.size() > 0) {
-				next = newNextPret.front();
-
-				std::cout << "PADLA " << g3_.GetVertex()[next][0] << " " << g3_.GetVertex()[next][0] << std::endl; 
-
+			if (not candidate.empty()) {
+				next = candidate.front();
 				if (lastDirection != Direction::RANDOM) {
-					for (const auto& vertex : newNextPret) {
-						if (GetDirection(last, vertex) == lastDirection) {
+					for (const auto& vertex : candidate) {
+						if (VertexEqu(last, vertex) and GetDirection(last, vertex) == lastDirection) {
 							next = vertex;
 							break;
 						}
@@ -178,42 +272,170 @@ void PathHelper::FindPath(std::vector<int> st) {
 				}
 			}
 
-
-			std::cout << g3_.GetAdjList()[next].size() << std::endl;
-
-			break;
+			if (next != -1)
+				break;
 		}
+	}
 
-		if (next == -1) {
-
-			int cur = p[last];
-
-			std::cout << "! " << last << std::endl;
-
-			if (cur == last)
-				throw std::runtime_error("Bad dads");
-
-			for (int i = 0; i < que.size(); ++i)
-				que[i].clear();
-
-			GenQue(cur, que, curField);
-			last = cur;
-			continue;
-		}
-
-		std::cout << "next " << next << std::endl;
-
-		AddField(next, curField);
-		p[next] = last;
-		lastDirection = GetDirection(last, next);
-		std::cout << "Direction " << lastDirection << std::endl;
-		last = next;
-		path_.push_back(next);
+	if (next == -1) {
+		candidate.clear();
+		int cur = p[last];
+		if (cur == last)
+			throw std::runtime_error("Bad dads");
 
 		for (int i = 0; i < que.size(); ++i)
 			que[i].clear();
 
-		GenQue(next, que, curField);
+		GenQue(cur, que, curField);
+		last = cur;
+		lastDirection = GetDirection(p[last], last);
+		return GetNext(curField, que, p, last, lastDirection);
+	}
+
+	if (not isUturn and next != -1) {
+		lastDirection = GetDirection(last, next);
+	} else {
+		lastDirection = Opposite(lastDirection);
+	}
+
+	AddField(next, curField);
+	p[next] = last;
+	last = next;
+	
+	for (int i = 0; i < que.size(); ++i)
+		que[i].clear();
+	GenQue(next, que, curField);
+	return next;
+}
+
+
+void PathHelper::SimAnn(double startTemp, double speed, double minTemp, std::vector<int> st, bool pathEst) {
+	if (not pathEst)
+		FindPath(st);
+	else {
+		std::ifstream in("G3Path.txt", std::ios::in);
+		ReadG3Path(in);
+		in.close();
+	}
+
+	double curTemp = startTemp;
+
+	while (curTemp > minTemp) {
+		for (int chainIt = 0; chainIt < 5; ++chainIt) {
+			int oldSize = GetPathSize();
+			auto oldPath = path_;
+			int toCalc = std::rand() % (path_.size()-1) + 1;
+
+			std::cout << "Cur Temp: " << curTemp << std::endl;
+			std::cout << "Cur to: " << toCalc << std::endl;
+
+			path_.resize(toCalc+1);
+
+			std::set<int> curField;
+			for (auto well : path_)
+				AddField(well, curField);
+
+			std::cout << "CurField OK" << std::endl;
+
+			std::vector<std::vector<int>> que;
+			que.resize(g3_.GetK() + 1);
+
+			GenQue(path_.back(), que, curField);
+
+			std::cout << "Gen Que OK" << std::endl;
+
+			std::vector<int> SimAnnNext;
+			for (int i = que.size()-1; i >= 0; --i) {
+				for (int j = 0; j < que[i].size(); ++j)
+					SimAnnNext.push_back(que[i][j]);
+			}
+
+			if (SimAnnNext.size() <= 1)
+				continue;
+
+			int next = std::rand() % SimAnnNext.size();
+			path_.push_back(SimAnnNext[next]);
+
+			Direction lastDirection = GetDirection(path_[path_.size() - 2], path_.back());
+			int last = path_.back();
+			AddField(SimAnnNext[next], curField);
+
+			std::cout << "Sim Next OK" << std::endl;
+
+			std::vector<int> p(g3_.GetVertex().size(), -1);
+			for (int i = 1; i < path_.size(); ++i)
+				p[path_[i]] = path_[i-1];
+
+			for (int i = 0; i < que.size(); ++i)
+				que[i].clear();
+			GenQue(path_.back(), que, curField);
+
+			std::cout << "Two Gen Que OK" << std::endl;
+
+			while (curField.size() < g3_.GetXPSHelper().GetWellCount()) {
+				path_.push_back(GetNext(curField, que,  p, last, lastDirection));
+			}
+
+			Optimize();
+
+			int curPathSize = GetPathSize();
+			std::cout << "* Path Size: " << curPathSize << std::endl;
+
+			if (curPathSize > oldSize) {
+				double curVer = std::exp(1.0 * (oldSize - curPathSize) / curTemp);
+				double cmpVer = (double)(std::rand())/RAND_MAX;
+
+				if (curVer < cmpVer) {
+					path_ = oldPath;
+				}
+			}
+		}
+
+		std::cout << std::endl;
+		curTemp *= speed;
+	}
+
+	std::ofstream out("G3Path.txt", std::ios::out);
+	WriteG3Path(out);
+	out.close();
+}
+
+void PathHelper::WriteG3Path(std::ofstream& out) {
+	for (int i = 0; i < path_.size(); ++i)
+		out << path_[i] << " ";
+	return;
+} 
+
+void PathHelper::ReadG3Path(std::ifstream& in) {
+	path_.clear();
+
+	int x;
+	while (in >> x)
+		path_.push_back(x);
+}
+
+int PathHelper::GetPathSize() {
+	int ret = 0;
+	for (int i = 1; i < path_.size(); ++i)
+		ret += SimSum(path_[i-1], path_[i]);
+
+	return ret;
+}
+
+void PathHelper::FindPath(std::vector<int> st) {
+	std::cout << "Start Find Path" << std::endl;
+	int stNum = FindVertex(st);
+	std::cout << "Vertex Num: " << stNum << std::endl;
+	std::set<int> curField;
+	std::vector<std::vector<int>> que(g3_.GetK() + 1);
+	std::vector<int> p(g3_.GetVertex().size(), -1);
+	que[st.size()].push_back(stNum);
+	int last = stNum;
+	Direction lastDirection = Size(last).first <= Size(last).second ? Direction::RIGHT : Direction::DOWN;
+
+	while (curField.size() < g3_.GetXPSHelper().GetWellCount()) {
+		std::cout << curField.size() << std::endl;
+		path_.push_back(GetNext(curField, que, p, last, lastDirection));
 	}
 }
 
